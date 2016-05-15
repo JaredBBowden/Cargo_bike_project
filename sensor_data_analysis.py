@@ -79,40 +79,52 @@ plt.show()
 plt.close
 
 
+print "\nDescriptive statistics (acceleration in m/s^2)"
 for file_number in range(len(data_files)):
 
-    print titles[file_number]
-
     temp_file = data_files[file_number]
+    temp_file = temp_file[temp_file["abs_sum"] >= 0.5]["abs_sum"]
 
-    print temp_file[temp_file["abs_sum"] >= 3.0]["abs_sum"]."describe()
-
+    print titles[file_number]
+    print "Mean:", round(temp_file.mean(), 2)
+    print "Median:", round(temp_file.median(), 2)
+    print "Std:", round(temp_file.std(), 2)
     print ""
 
 # TODO the next thing I had wanted to do was make some frequency histograms
 fig = plt.figure(figsize=(5,20))
-
-# We need to find the max frequency across all the files
-max_freq = []
-
-for file_number in range(len(data_files)):
-
-    max_freq.append(data_files[file_number]["abs_sum"].value_counts().max())
-
 
 for file_number in range(len(data_files)):
 
     # This is the kinda odd method I've arrived at to set the subplot information
     plt.subplot(len(data_files) * 100 + 10 + int(file_number) + 1)
 
-    plt.hist(data_files[file_number]["abs_sum"], bins=100, normed=True)
+    # This is lazy
+    temp_file = data_files[file_number]
+    temp_file = temp_file[temp_file["abs_sum"] >= 0.5]["abs_sum"]
 
-    plt.xlim(0, 20)
-    plt.ylim(0, max(max_freq) + 10000)
+    plt.hist(temp_file, bins=100, normed=True, alpha = 0.5)
+
+    # TODO this is not currently working
+    """
+    mean = round(temp_file.mean(), 2)
+    median = round(temp_file.median(), 2)
+    stdev = round(temp_file.std(), 2)
+    plt.figtext(0.5, 0.5, str(mean))
+    plt.figtext(0.5, 0.6,str(median))
+    plt.figtext(0.5, 0.7, str(stdev))
+    """
+
+    plt.xlim(0, 10)
     plt.title(titles[file_number])
+    plt.ylabel("Proportion of observations")
+    plt.xlabel("acceleration (m/s^2)")
+
+
+    del temp_file
 
 plt.tight_layout()
-plt.show()
+plt.savefig("/Users/jaredbowden/Desktop/output.png")
 plt.close
 
 # TODO add some parametric statistics to compare these groups
