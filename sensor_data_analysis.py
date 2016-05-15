@@ -43,6 +43,7 @@ for file_number in range(len(data_files)):
 
     absolute_sum_accel(data_files[file_number])
 
+# PLOTTING FROM HERE
 
 # OK, let's plot things up
 fig = plt.figure(figsize=(40,10))
@@ -89,19 +90,29 @@ for file_number in range(len(data_files)):
     print ""
 
 # TODO the next thing I had wanted to do was make some frequency histograms
+fig = plt.figure(figsize=(5,20))
 
-fig = plt.figure(figsize=(8,10))
+# We need to find the max frequency across all the files
+max_freq = []
+
+for file_number in range(len(data_files)):
+
+    max_freq.append(data_files[file_number]["abs_sum"].value_counts().max())
+
 
 for file_number in range(len(data_files)):
 
     # This is the kinda odd method I've arrived at to set the subplot information
     plt.subplot(len(data_files) * 100 + 10 + int(file_number) + 1)
 
-    plt.hist(data_files[file_number]["abs_sum"])
+    plt.hist(data_files[file_number]["abs_sum"], bins=100, normed=True)
 
-    #plt.ylim(ymax=30, ymin=-30)
+    plt.xlim(0, 20)
+    plt.ylim(0, max(max_freq) + 10000)
     plt.title(titles[file_number])
 
 plt.tight_layout()
 plt.show()
 plt.close
+
+# TODO add some parametric statistics to compare these groups
