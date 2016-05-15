@@ -30,6 +30,20 @@ for file_number, file in enumerate(file_names):
         file, comment="#", sep=" ", header=None, names=["x", "y", "z", "?"])
 
 
+# TODO add title specific color
+def absolute_sum_accel(frame):
+    """
+    Will create a new column with the sum of acceleration in x, y, and z dimensions
+    """
+    frame["abs_sum"] = abs(frame["x"]) + abs(frame["y"]) + abs(frame["z"])
+
+    return
+
+for file_number in range(len(data_files)):
+
+    absolute_sum_accel(data_files[file_number])
+
+
 # OK, let's plot things up
 fig = plt.figure(figsize=(40,10))
 
@@ -46,20 +60,6 @@ for file_number in range(len(data_files)):
 plt.tight_layout()
 plt.show()
 plt.close
-
-
-def absolute_sum_accel(frame):
-    """
-    Will create a new column with the sum of acceleration in x, y, and z dimensions
-    """
-    frame["abs_sum"] = abs(frame["x"]) + abs(frame["y"]) + abs(frame["z"])
-
-    return
-
-
-for file_number in range(len(data_files)):
-
-    absolute_sum_accel(data_files[file_number])
 
 
 fig = plt.figure(figsize=(40,10))
@@ -87,3 +87,21 @@ for file_number in range(len(data_files)):
     print temp_file[temp_file["abs_sum"] >= 3.0]["abs_sum"]."describe()
 
     print ""
+
+# TODO the next thing I had wanted to do was make some frequency histograms
+
+fig = plt.figure(figsize=(8,10))
+
+for file_number in range(len(data_files)):
+
+    # This is the kinda odd method I've arrived at to set the subplot information
+    plt.subplot(len(data_files) * 100 + 10 + int(file_number) + 1)
+
+    plt.hist(data_files[file_number]["abs_sum"])
+
+    #plt.ylim(ymax=30, ymin=-30)
+    plt.title(titles[file_number])
+
+plt.tight_layout()
+plt.show()
+plt.close
