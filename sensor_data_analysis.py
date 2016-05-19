@@ -4,12 +4,15 @@ __version__ = 1.1
 import glob as glob
 import matplotlib.pyplot as plt
 import pandas as pd
+from statsmodels.stats.multicomp import (pairwise_tukeyhsd,
+                                         MultiComparison)
+
+base_path = "/Users/jaredbowden/Google Drive/cave_in_a_lake/projects/sensor_project/"
 
 # Read in the other data files
-file_names = glob.glob(
-    "/Users/jaredbowden/Google Drive/cave in a lake/projects/sensor_project/sensor_data/*txt")
+file_names = glob.glob(base_path + "sensor_data/*txt")
 
-# Split these file names to use for the chart titles
+# Split these file names to use in chart titles
 titles = []
 
 for file in file_names:
@@ -100,6 +103,8 @@ for file_number in range(len(data_files)):
     # Append the temp frame
     descriptive_stats = descriptive_stats.append(temp_df, ignore_index=True)
 
+data_files[0][data_files["abs_sum"] >= 0.5]["abs_sum"]
+
 print "\nDescriptive statistics (acceleration in m/s^2)"
 print descriptive_stats.sort_values("mean", ascending = False)
 
@@ -140,3 +145,20 @@ plt.savefig("/Users/jaredbowden/Desktop/output.png")
 plt.close
 
 # TODO add some parametric statistics to compare these groups
+stats_frame = pd.DataFrame(columns = ["group", "abs_sum"])
+
+for file_number in range(len(data_files)):
+
+    temp_file = data_files[file_number]
+    temp_file = temp_file[temp_file["abs_sum"] >= 0.5]["abs_sum"]
+
+    # Make a temp frame to append
+    temp_df = pd.DataFrame(data = {"group": str(titles[file_number]) * len(temp_file),
+                                    "abs_sum": temp_file.values})
+
+
+    # Append the temp frame
+    stats_frame = stats_frame.append(temp_df, ignore_index=True)
+
+print ""
+print pairwise_tukeyhsd(stats_frame["abs_sum"].values, stats_frame["group"].values)
