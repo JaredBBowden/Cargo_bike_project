@@ -1,5 +1,5 @@
 __author__ = "Jared B Bowden"
-__version__ = 1.0
+__version__ = 1.1
 
 import glob as glob
 import matplotlib.pyplot as plt
@@ -22,6 +22,7 @@ for file in file_names:
 
 
 # Read in the files
+# TODO read in files with dates
 data_files = {}
 
 for file_number, file in enumerate(file_names):
@@ -46,15 +47,18 @@ for file_number in range(len(data_files)):
 # PLOTTING FROM HERE
 
 # OK, let's plot things up
-fig = plt.figure(figsize=(40,10))
+fig = plt.figure(figsize=(40, 10))
 
 for file_number in range(len(data_files)):
 
     plt.subplot(len(data_files) * 100 + 10 + int(file_number) + 1)
 
-    plt.plot(data_files[file_number].index, data_files[file_number]["x"], color="green", linewidth=0.5)
-    plt.plot(data_files[file_number].index, data_files[file_number]["y"], color="green", linewidth=0.5)
-    plt.plot(data_files[file_number].index, data_files[file_number]["z"], color="green", linewidth=0.5)
+    plt.plot(data_files[file_number].index, data_files[
+             file_number]["x"], color="green", linewidth=0.5)
+    plt.plot(data_files[file_number].index, data_files[
+             file_number]["y"], color="green", linewidth=0.5)
+    plt.plot(data_files[file_number].index, data_files[
+             file_number]["z"], color="green", linewidth=0.5)
     plt.ylim(ymax=30, ymin=-30)
     plt.title(titles[file_number])
 
@@ -63,13 +67,14 @@ plt.show()
 plt.close
 
 
-fig = plt.figure(figsize=(40,10))
+fig = plt.figure(figsize=(40, 10))
 
 for file_number in range(len(data_files)):
 
     plt.subplot(len(data_files) * 100 + 10 + int(file_number) + 1)
 
-    plt.plot(data_files[file_number].index, data_files[file_number]["abs_sum"], color="green", linewidth=0.5)
+    plt.plot(data_files[file_number].index, data_files[
+             file_number]["abs_sum"], color="green", linewidth=0.5)
 
     #plt.ylim(ymax=30, ymin=-30)
     plt.title(titles[file_number])
@@ -78,34 +83,42 @@ plt.tight_layout()
 plt.show()
 plt.close
 
+# TODO let's output this data as a sorted histogram
+descriptive_stats = pd.DataFrame(columns=["title", "mean", "median", "std"])
 
-print "\nDescriptive statistics (acceleration in m/s^2)"
 for file_number in range(len(data_files)):
 
     temp_file = data_files[file_number]
     temp_file = temp_file[temp_file["abs_sum"] >= 0.5]["abs_sum"]
 
-    print titles[file_number]
-    print "Mean:", round(temp_file.mean(), 2)
-    print "Median:", round(temp_file.median(), 2)
-    print "Std:", round(temp_file.std(), 2)
-    print ""
+    # Make a temp frame to append
+    temp_df = pd.DataFrame(data = {"title": [titles[file_number]],
+                                    "mean": [round(temp_file.mean(), 2)],
+                                    "median": [round(temp_file.median(), 2)],
+                                    "std": [round(temp_file.std(), 2)]})
 
-# TODO the next thing I had wanted to do was make some frequency histograms
-fig = plt.figure(figsize=(5,20))
+    # Append the temp frame
+    descriptive_stats = descriptive_stats.append(temp_df, ignore_index=True)
+
+print "\nDescriptive statistics (acceleration in m/s^2)"
+print descriptive_stats.sort_values("mean", ascending = False)
+
+
+fig = plt.figure(figsize=(5, 20))
 
 for file_number in range(len(data_files)):
 
-    # This is the kinda odd method I've arrived at to set the subplot information
+    # This is the kinda odd method I've arrived at to set the subplot
+    # information
     plt.subplot(len(data_files) * 100 + 10 + int(file_number) + 1)
 
     # This is lazy
     temp_file = data_files[file_number]
     temp_file = temp_file[temp_file["abs_sum"] >= 0.5]["abs_sum"]
 
-    plt.hist(temp_file, bins=100, normed=True, alpha = 0.5)
+    plt.hist(temp_file, bins=100, normed=True, alpha=0.5)
 
-    # TODO this is not currently working
+    # FIXME this is not currently working
     """
     mean = round(temp_file.mean(), 2)
     median = round(temp_file.median(), 2)
@@ -119,7 +132,6 @@ for file_number in range(len(data_files)):
     plt.title(titles[file_number])
     plt.ylabel("Proportion of observations")
     plt.xlabel("acceleration (m/s^2)")
-
 
     del temp_file
 
