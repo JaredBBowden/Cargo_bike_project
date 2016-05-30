@@ -1,13 +1,11 @@
 __author__ = "Jared B Bowden"
-__version__ = 1.1
+__version__ = 1.2
 
 import glob as glob
 import matplotlib.pyplot as plt
 import pandas as pd
-from statsmodels.stats.multicomp import (pairwise_tukeyhsd,
-                                         MultiComparison)
 
-base_path = "/Users/jaredbowden/Google Drive/cave_in_a_lake/projects/sensor_project/"
+base_path = "./"
 
 # Read in the other data files
 file_names = glob.glob(base_path + "sensor_data/*txt")
@@ -34,7 +32,8 @@ for file_number, file in enumerate(file_names):
         file, comment="#", sep=" ", header=None, names=["x", "y", "z", "?"])
 
 
-# TODO add title specific color
+# TODO add title specific color: colors should be specific to different
+# activities
 def absolute_sum_accel(frame):
     """
     Will create a new column with the sum of acceleration in x, y, and z dimensions
@@ -59,9 +58,9 @@ for file_number in range(len(data_files)):
     plt.plot(data_files[file_number].index, data_files[
              file_number]["x"], color="green", linewidth=0.5)
     plt.plot(data_files[file_number].index, data_files[
-             file_number]["y"], color="green", linewidth=0.5)
+             file_number]["y"], color="red", linewidth=0.5)
     plt.plot(data_files[file_number].index, data_files[
-             file_number]["z"], color="green", linewidth=0.5)
+             file_number]["z"], color="blue", linewidth=0.5)
     plt.ylim(ymax=30, ymin=-30)
     plt.title(titles[file_number])
 
@@ -95,10 +94,10 @@ for file_number in range(len(data_files)):
     temp_file = temp_file[temp_file["abs_sum"] >= 0.5]["abs_sum"]
 
     # Make a temp frame to append
-    temp_df = pd.DataFrame(data = {"title": [titles[file_number]],
-                                    "mean": [round(temp_file.mean(), 2)],
-                                    "median": [round(temp_file.median(), 2)],
-                                    "std": [round(temp_file.std(), 2)]})
+    temp_df = pd.DataFrame(data={"title": [titles[file_number]],
+                                 "mean": [round(temp_file.mean(), 2)],
+                                 "median": [round(temp_file.median(), 2)],
+                                 "std": [round(temp_file.std(), 2)]})
 
     # Append the temp frame
     descriptive_stats = descriptive_stats.append(temp_df, ignore_index=True)
@@ -106,7 +105,7 @@ for file_number in range(len(data_files)):
 data_files[0][data_files["abs_sum"] >= 0.5]["abs_sum"]
 
 print "\nDescriptive statistics (acceleration in m/s^2)"
-print descriptive_stats.sort_values("mean", ascending = False)
+print descriptive_stats.sort_values("mean", ascending=False)
 
 
 fig = plt.figure(figsize=(5, 20))
@@ -145,7 +144,7 @@ plt.savefig("/Users/jaredbowden/Desktop/output.png")
 plt.close
 
 # TODO add some parametric statistics to compare these groups
-stats_frame = pd.DataFrame(columns = ["group", "abs_sum"])
+stats_frame = pd.DataFrame(columns=["group", "abs_sum"])
 
 for file_number in range(len(data_files)):
 
@@ -153,12 +152,12 @@ for file_number in range(len(data_files)):
     temp_file = temp_file[temp_file["abs_sum"] >= 0.5]["abs_sum"]
 
     # Make a temp frame to append
-    temp_df = pd.DataFrame(data = {"group": str(titles[file_number]) * len(temp_file),
-                                    "abs_sum": temp_file.values})
-
+    temp_df = pd.DataFrame(data={"group": str(titles[file_number]) * len(temp_file),
+                                 "abs_sum": temp_file.values})
 
     # Append the temp frame
     stats_frame = stats_frame.append(temp_df, ignore_index=True)
 
+# FIXME
 print ""
 print pairwise_tukeyhsd(stats_frame["abs_sum"].values, stats_frame["group"].values)
