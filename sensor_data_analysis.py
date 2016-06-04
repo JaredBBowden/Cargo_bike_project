@@ -5,12 +5,18 @@ import glob as glob
 import matplotlib.pyplot as plt
 import pandas as pd
 
-base_path = "./"
+base_path = "/Users/jaredbowden/Google Drive/cave_in_a_lake/data/sensor_project_data/"
+activities = {"strolling": "blue",
+              "walking": "purple",
+              "biking": "grey",
+              "gondolier": "green",
+              "car": "orange"}
+cut_off = 0.5
 
 # Read in the other data files
-file_names = glob.glob(base_path + "sensor_data/*txt")
+file_names = glob.glob(base_path + "*txt")
 
-# Split these file names to use in chart titles
+# Split these path titles to use in chart titles
 titles = []
 
 for file in file_names:
@@ -22,62 +28,55 @@ for file in file_names:
     del temp_title
 
 
-# Read in the files
-# TODO read in files with dates
-data_files = {}
-
-for file_number, file in enumerate(file_names):
-
-    data_files[file_number] = pd.read_csv(
-        file, comment="#", sep=" ", header=None, names=["x", "y", "z", "?"])
-
-
-# TODO add title specific color: colors should be specific to different
-# activities
 def absolute_sum_accel(frame):
     """
     Will create a new column with the sum of acceleration in x, y, and z dimensions
     """
     frame["abs_sum"] = abs(frame["x"]) + abs(frame["y"]) + abs(frame["z"])
 
-    return
+    return frame
+
+# Read in the files
+# TODO read in files with dates
+data_files = {}
+
+for file_number, file in enumerate(file_names):
+
+    data_files[file_number] = absolute_sum_accel(pd.read_csv(file,
+                                                             comment="#",
+                                                             sep=" ",
+                                                             header=None,
+                                                             names=["x", "y",
+                                                                    "z", "?"]))
+
+
+def get_color(file_name):
+    """
+    Return activity-specific colors
+    """
+    for activity in activities:
+
+        if activity in file_name.lower():
+
+            return activities[activity]
+
+
+fig = plt.figure(figsize=(10, 30))
 
 for file_number in range(len(data_files)):
 
-    absolute_sum_accel(data_files[file_number])
+    plt.subplot(len(data_files), 1, file_number + 1)
 
-# PLOTTING FROM HERE
+    plt.plot(data_files[file_number].index,
+             data_files[
+                 file_number]["abs_sum"],
+             color=get_color(titles[file_number]),
+             linewidth=0.5)
 
-# OK, let's plot things up
-fig = plt.figure(figsize=(40, 10))
-
-for file_number in range(len(data_files)):
-
-    plt.subplot(len(data_files) * 100 + 10 + int(file_number) + 1)
-
-    plt.plot(data_files[file_number].index, data_files[
-             file_number]["x"], color="green", linewidth=0.5)
-    plt.plot(data_files[file_number].index, data_files[
-             file_number]["y"], color="red", linewidth=0.5)
-    plt.plot(data_files[file_number].index, data_files[
-             file_number]["z"], color="blue", linewidth=0.5)
-    plt.ylim(ymax=30, ymin=-30)
-    plt.title(titles[file_number])
-
-plt.tight_layout()
-plt.show()
-plt.close
-
-
-fig = plt.figure(figsize=(40, 10))
-
-for file_number in range(len(data_files)):
-
-    plt.subplot(len(data_files) * 100 + 10 + int(file_number) + 1)
-
-    plt.plot(data_files[file_number].index, data_files[
-             file_number]["abs_sum"], color="green", linewidth=0.5)
-
+    # TODO need to find axes max across files
+    # TODO add axes labels
+    # TODO consider adding the means and the median to the title, and shifting
+    # the descriptive stats to above.
     #plt.ylim(ymax=30, ymin=-30)
     plt.title(titles[file_number])
 
@@ -104,9 +103,9 @@ for file_number in range(len(data_files)):
 
 data_files[0][data_files["abs_sum"] >= 0.5]["abs_sum"]
 
+# TODO this title is not accurate
 print "\nDescriptive statistics (acceleration in m/s^2)"
 print descriptive_stats.sort_values("mean", ascending=False)
-
 
 fig = plt.figure(figsize=(5, 20))
 
@@ -152,12 +151,14 @@ for file_number in range(len(data_files)):
     temp_file = temp_file[temp_file["abs_sum"] >= 0.5]["abs_sum"]
 
     # Make a temp frame to append
-    temp_df = pd.DataFrame(data={"group": str(titles[file_number]) * len(temp_file),
-                                 "abs_sum": temp_file.values})
+    temp_df = pd.DataFrame(
+        data={"group": str(titles[file_number]) * len(temp_file),
+              "abs_sum": temp_file.values})
 
     # Append the temp frame
     stats_frame = stats_frame.append(temp_df, ignore_index=True)
 
 # FIXME
 print ""
-print pairwise_tukeyhsd(stats_frame["abs_sum"].values, stats_frame["group"].values)
+print pairwise_tukeyhsd(stats_frame["abs_sum"].values,
+                        stats_frame["group"].values)
