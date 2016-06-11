@@ -1,16 +1,19 @@
 __author__ = "Jared B Bowden"
-__version__ = 1.2
+__version__ = 1.3
 
 import glob as glob
 import matplotlib.pyplot as plt
 import pandas as pd
 import sensor_functions as sf
 import datetime
+from paths import path
+
 
 def main():
-    base_path = "/Users/jaredbowden/Google Drive/cave_in_a_lake/data/sensor_project_data/"
-    out_path = base_path + "output"
-    time_run = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d_%H:%M:%S')
+    base_path = path["data_in"]
+    out_path = path["data_out"]
+    time_run = datetime.datetime.strftime(datetime.datetime.now(),
+                                          '%Y-%m-%d_%H:%M:%S')
 
     # Read in the other data files
     file_names = glob.glob(base_path + "*txt")
@@ -30,12 +33,12 @@ def main():
 
     for file_number, file in enumerate(file_names):
 
-        data_files[file_number] = sf.drop_start_and_stop(sf.absolute_sum_accel(pd.read_csv(file,
-                                                                 comment="#",
-                                                                 sep=" ",
-                                                                 header=None,
-                                                                 names=["x", "y",
-                                                                        "z", "?"])))
+        data_files[file_number] = sf.drop_start_and_stop(sf.absolute_sum_accel(
+            pd.read_csv(file,
+                        comment="#",
+                        sep=" ",
+                        header=None,
+                        names=["x", "y", "z", "?"])))
 
     # Plot absolute value data
     fig = plt.figure(figsize=(10, 30))
@@ -52,17 +55,16 @@ def main():
 
         # TODO need to find axes max across files
         # TODO add axes labels
-        # TODO consider adding the means and the median to the title, and shifting
-        # the descriptive stats to above.
-        #plt.ylim(ymax=30, ymin=-30)
+        # TODO consider adding the means and the median to the title
         plt.title(titles[file_number])
 
     plt.tight_layout()
-    plt.savefig(out_path + time_run + "abs_value_line.png")
-    plt.close
+    plt.savefig(out_path + time_run + "_abs_value_line.png")
+    plt.close()
 
-    # TODO let's output this data as a sorted histogram
-    descriptive_stats = pd.DataFrame(columns=["title", "mean", "median", "std"])
+    # Descriptive statistics for each activity
+    descriptive_stats = pd.DataFrame(
+        columns=["title", "mean", "median", "std"])
 
     for file_number in range(len(data_files)):
 
@@ -76,13 +78,15 @@ def main():
                                      "std": [round(temp_file.std(), 2)]})
 
         # Append the temp frame
-        descriptive_stats = descriptive_stats.append(temp_df, ignore_index=True)
+        descriptive_stats = descriptive_stats.append(temp_df,
+                                                     ignore_index=True)
 
-    #data_files[0][data_files["abs_sum"] >= 0.5]["abs_sum"]
-
+    # Plot frequency histograms 
+    # TODO the spacing on all of this needs improvement
     # TODO this title is not accurate
-    print "\nDescriptive statistics (acceleration in m/s^2)"
+    print "\nDescriptive statistics (accelleration in m/s^2)"
     print descriptive_stats.sort_values("mean", ascending=False)
+    descriptive_stats.to_csv(out_path + time_run + "descriptive_stats.png")
 
     fig = plt.figure(figsize=(5, 20))
 
@@ -102,9 +106,8 @@ def main():
         plt.xlabel("acceleration (m/s^2)")
 
     plt.tight_layout()
-    plt.show()
-    # plt.savefig(base_path + out_path + time_run + "abs_value_line.png")
-    plt.close
+    plt.savefig(out_path + time_run + "_frequency_histograms.png")
+    plt.close()
 
     # TODO add some parametric statistics to compare these groups
     stats_frame = pd.DataFrame(columns=["group", "abs_sum"])
@@ -122,12 +125,6 @@ def main():
         # Append the temp frame
         stats_frame = stats_frame.append(temp_df, ignore_index=True)
 
-    # FIXME
-    #print ""
-    #print pairwise_tukeyhsd(stats_frame["abs_sum"].values,
-    #                        stats_frame["group"].values)
 
 if __name__ == "__main__":
     main()
-
-
