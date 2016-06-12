@@ -1,19 +1,20 @@
-__author__ = "Jared B Bowden"
-__version__ = 1.3
-
+import datetime as datetime
 import glob as glob
+
 import matplotlib.pyplot as plt
 import pandas as pd
+
 import sensor_functions as sf
-import datetime
 from paths import path
+
+__author__ = "Jared B Bowden"
+__version__ = 1.3
 
 
 def main():
     base_path = path["data_in"]
     out_path = path["data_out"]
-    time_run = datetime.datetime.strftime(datetime.datetime.now(),
-                                          '%Y-%m-%d_%H:%M:%S')
+    time_run = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
     # Read in the other data files
     file_names = glob.glob(base_path + "*txt")
@@ -48,8 +49,7 @@ def main():
         plt.subplot(len(data_files), 1, file_number + 1)
 
         plt.plot(data_files[file_number].index,
-                 data_files[
-                     file_number]["abs_sum"],
+                 data_files[file_number]["abs_sum"],
                  color=sf.get_color(titles[file_number]),
                  linewidth=0.5)
 
@@ -76,15 +76,14 @@ def main():
                                      "mean": [round(temp_file.mean(), 2)],
                                      "median": [round(temp_file.median(), 2)],
                                      "std": [round(temp_file.std(), 2)]})
-
         # Append the temp frame
         descriptive_stats = descriptive_stats.append(temp_df,
                                                      ignore_index=True)
 
-    # Plot frequency histograms 
+    # Plot frequency histograms
     # TODO the spacing on all of this needs improvement
     # TODO this title is not accurate
-    print "\nDescriptive statistics (accelleration in m/s^2)"
+    print "\nDescriptive statistics (acceleration in m/s^2)"
     print descriptive_stats.sort_values("mean", ascending=False)
     descriptive_stats.to_csv(out_path + time_run + "descriptive_stats.png")
 
@@ -95,6 +94,7 @@ def main():
         plt.subplot(len(data_files), 1, file_number + 1)
 
         # This is lazy
+        # TODO find a better way to remove low values
         temp_file = data_files[file_number]
         temp_file = temp_file[temp_file["abs_sum"] >= 0.5]["abs_sum"]
 
