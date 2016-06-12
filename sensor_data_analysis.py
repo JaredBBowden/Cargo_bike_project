@@ -1,4 +1,4 @@
-import datetime as datetime
+from datetime import datetime
 import glob as glob
 
 import matplotlib.pyplot as plt
